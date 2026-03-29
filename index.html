@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Ishan - AI News Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 20px 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.6); }
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(26, 26, 50, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #00d4ff;
+        }
+
+        /* API Key Inputs */
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 14px;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #555;
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+        }
+
+        .btn-toggle-eye:hover {
+            color: #00d4ff;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.35);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #00c853, #00bfa5);
+            color: white;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 200, 83, 0.3);
+        }
+
+        .btn-auto {
+            background: rgba(255, 107, 157, 0.15);
+            color: #ff6b9d;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+        }
+
+        .btn-auto:hover {
+            background: rgba(255, 107, 157, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-auto.active {
+            background: linear-gradient(135deg, #ff6b9d, #ff3d7f);
+            color: white;
+            border-color: transparent;
+            animation: pulseBtn 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseBtn {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 157, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(255, 107, 157, 0.4); }
+        }
+
+        .btn-clear {
+            background: rgba(255, 82, 82, 0.1);
+            color: #ff5252;
+            border: 1px solid rgba(255, 82, 82, 0.2);
+            padding: 12px 16px;
+        }
+
+        .btn-clear:hover {
+            background: rgba(255, 82, 82, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.08);
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .status-dot.online {
+            background: #00c853;
+            box-shadow: 0 0 8px rgba(0, 200, 83, 0.5);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        .status-dot.offline {
+            background: #ff5252;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .countdown {
+            color: #888;
+            font-size: 12px;
+        }
+
+        /* News Output */
+        .news-area {
+            min-height: 120px;
+            position: relative;
+        }
+
+        .news-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+            animation: slideIn 0.5s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .news-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(0, 212, 255, 0.2);
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .news-item h3 {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+
+        .news-item .source {
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* AI Summary Box */
+        .summary-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(123, 47, 247, 0.08));
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 16px;
+            line-height: 1.8;
+            font-size: 15px;
+            white-space: pre-wrap;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .summary-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #7b2ff7;
+            background: rgba(123, 47, 247, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Loading Spinner */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loader.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 212, 255, 0.1);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader p {
+            color: #888;
+            font-size: 13px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #555;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Error */
+        .error-box {
+            background: rgba(255, 82, 82, 0.1);
+            border: 1px solid rgba(255, 82, 82, 0.2);
+            border-radius: 10px;
+            padding: 14px;
+            color: #ff8a80;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* History */
+        .history-item {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px 0;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-time {
+            font-size: 11px;
+            color: #00d4ff;
+            margin-bottom: 6px;
+        }
+
+        .history-text {
+            font-size: 13px;
+            color: #aaa;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(26, 26, 50, 0.95);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            color: #e0e0e0;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 13px;
+            z-index: 999;
+            transition: transform 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #444;
+            font-size: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer a {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+
+        /* Settings row */
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .news-count-select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .news-count-select:focus {
+            border-color: #00d4ff;
+        }
+
+        .news-count-select option {
+            background: #1a1a3e;
+            color: #e0e0e0;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .btn-row {
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+
+            .logo h1 {
+                font-size: 22px;
+            }
+
+            .settings-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            <h1>Bot Ishan</h1>
+        </div>
+        <p class="subtitle">AI-Powered Crypto & World News Bot</p>
+    </div>
+
+    <div class="container">
+
+        <!-- API Keys Card -->
+        <div class="card" id="settingsCard">
+            <div class="card-title">🔑 API Configuration</div>
+
+            <div class="input-group">
+                <label>CryptoPanic API Key</label>
+                <div class="input-wrapper">
+                    <input type="password" id="cryptoKey" placeholder="Enter your CryptoPanic API key..." />
+                    <button class="btn-toggle-eye" onclick="togglePassword('cryptoKey')">👁</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Gemini AI API Key</label>
+                <div class="input-wrapper">
+                    <input type="password" id="geminiKey" placeholder="Enter your Gemini AI API key..." />
+                    <button class="btn-toggle-eye" onclick="togglePassword('geminiKey')">👁</button>
+                </div>
+            </div>
+
+            <div class="settings-row">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <label style="margin:0; font-size:12px; color:#888;">NEWS COUNT:</label>
+                    <select class="news-count-select" id="newsCount">
+                        <option value="3">3 Headlines</option>
+                        <option value="5">5 Headlines</option>
+                        <option value="8">8 Headlines</option>
+                        <option value="10">10 Headlines</option>
+                    </select>
+                </div>
+                <button class="btn btn-save" onclick="saveKeys()">💾 Save Keys</button>
+            </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="card">
+            <div class="card-title">⚡ Controls</div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="fetchBtn" onclick="fetchNews()">
+                    📰 Fetch & Summarize Now
+                </button>
+                <button class="btn btn-auto" id="autoBtn" onclick="toggleAuto()">
+                    🔄 Auto Mode
+                </button>
+                <button class="btn btn-clear" onclick="clearHistory()">🗑</button>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div>
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Ready</span>
+            </div>
+            <div class="countdown" id="countdown"></div>
+        </div>
+
+        <!-- News Output Card -->
+        <div class="card">
+            <div class="card-title">📰 Latest News & AI Summary</div>
+            <div class="news-area" id="newsArea">
+                <div class="empty-state" id="emptyState">
+                    <div class="icon">🌐</div>
+                    <p>Click <strong>"Fetch & Summarize Now"</strong> to get started</p>
+                </div>
+            </div>
+            <div class="loader" id="loader">
+                <div class="spinner"></div>
+                <p id="loaderText">Fetching latest news...</p>
+            </div>
+        </div>
+
+        <!-- History Card -->
+        <div class="card" id="historyCard" style="display:none;">
+            <div class="card-title">📜 Summary History</div>
+            <div id="historyArea"></div>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>🤖 Bot Ishan &copy; 2025 — Powered by CryptoPanic & Google Gemini AI</p>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== GLOBAL STATE =====
+        let autoInterval = null;
+        let countdownTimer = null;
+        let countdownSeconds = 0;
+        let isAutoMode = false;
+
+        // ===== INIT =====
+        window.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            loadKeys();
+            updateStatus('offline', 'Ready — Enter API keys & click Fetch');
+        });
+
+        // ===== PARTICLES =====
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (Math.random() * 10 + 8) + 's';
+                p.style.animationDelay = (Math.random() * 10) + 's';
+                p.style.width = p.style.height = (Math.random() * 4 + 2) + 'px';
+                container.appendChild(p);
+            }
+        }
+
+        // ===== TOAST =====
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ===== TOGGLE PASSWORD =====
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // ===== SAVE / LOAD KEYS =====
+        function saveKeys() {
+            const ck = document.getElementById('cryptoKey').value.trim();
+            const gk = document.getElementById('geminiKey').value.trim();
+            if (!ck || !gk) {
+                showToast('⚠️ Please enter both API keys!');
+                return;
+            }
+            localStorage.setItem('botIshan_cryptoKey', ck);
+            localStorage.setItem('botIshan_geminiKey', gk);
+            showToast('✅ API Keys saved successfully!');
+        }
+
+        function loadKeys() {
+            const ck = localStorage.getItem('botIshan_cryptoKey');
+            const gk = localStorage.getItem('botIshan_geminiKey');
+            if (ck) document.getElementById('cryptoKey').value = ck;
+            if (gk) document.getElementById('geminiKey').value = gk;
+        }
+
+        function getKeys() {
+            return {
+                crypto: document.getElementById('cryptoKey').value.trim(),
+                gemini: document.getElementById('geminiKey').value.trim()
+            };
+        }
+
+        // ===== STATUS =====
+        function updateStatus(type, text) {
+            const dot = document.getElementById('statusDot');
+            const txt = document.getElementById('statusText');
+            dot.className = 'status-dot ' + (type === 'online' ? 'online' : 'offline');
+            txt.textContent = text;
+        }
+
+        // ===== COUNTDOWN =====
+        function startCountdown(seconds) {
+            countdownSeconds = seconds;
+            const el = document.getElementById('countdown');
+            clearInterval(countdownTimer);
+            countdownTimer = setInterval(() => {
+                countdownSeconds--;
+                if (countdownSeconds <= 0) {
+                    clearInterval(countdownTimer);
+                    el.textContent = '';
+                    return;
+                }
+                const m = Math.floor(countdownSeconds / 60);
+                const s = countdownSeconds % 60;
+                el.textContent = `Next update in ${m}:${s.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // ===== FETCH NEWS (MAIN FUNCTION) =====
+        async function fetchNews() {
+            const keys = getKeys();
+            if (!keys.crypto || !keys.gemini) {
+                showToast('⚠️ Please enter and save your API keys first!');
+                return;
+            }
+
+            const fetchBtn = document.getElementById('fetchBtn');
+            const loader = document.getElementById('loader');
+            const loaderText = document.getElementById('loaderText');
+            const newsArea = document.getElementById('newsArea');
+
+            // UI: Loading state
+            fetchBtn.disabled = true;
+            document.getElementById('emptyState').style.display = 'none';
+            loader.classList.add('show');
+            loaderText.textContent = '📡 Fetching latest news from CryptoPanic...';
+            updateStatus('online', 'Fetching news...');
+
+            try {
+                // Step 1: Fetch from CryptoPanic via CORS proxy
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                const apiUrl = `https://cryptopanic.com/api/v1/posts/?auth_token=${keys.crypto}&public=true`;
+                const encodedUrl = encodeURIComponent(apiUrl);
+
+                const response = await fetch(proxyUrl + encodedUrl);
+                if (!response.ok) throw new Error('CryptoPanic API request failed (' + response.status + ')');
+
+                const data = await response.json();
+                if (!data.results || data.results.length === 0) {
+                    throw new Error('No news found from CryptoPanic');
+                }
+
+                const count = parseInt(document.getElementById('newsCount').value);
+                const topNews = data.results.slice(0, count);
+
+                // Display headlines
+                let newsHTML = '';
+                let newsText = '';
+                topNews.forEach((post, i) => {
+                    newsText += `${i + 1}. ${post.title}\n`;
+                    newsHTML += `
+                        <div class="news-item" style="animation-delay: ${i * 0.1}s">
+                            <h3>📌 ${post.title}</h3>
+                            <div class="source">
+                                <span>🔗 ${post.domain || 'Unknown'}</span>
+                                <span>•</span>
+                                <span>${timeAgo(post.published_at)}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                newsArea.innerHTML = newsHTML;
+
+                // Step 2: Summarize with Gemini AI
+                loaderText.textContent = '🧠 AI is generating summary...';
+
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys.gemini}`;
+
+                const prompt = `Summarize these news headlines in a very short, professional way with emojis. Keep it under 100 words. Make it engaging and easy to read:\n\n${newsText}`;
+
+                const geminiResponse = await fetch(geminiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: prompt }]
+                        }]
+                    })
+                });
+
+                if (!geminiResponse.ok) {
+                    const errData = await geminiResponse.json().catch(() => ({}));
+                    throw new Error('Gemini API error: ' + (errData?.error?.message || geminiResponse.status));
+                }
+
+                const geminiData = await geminiResponse.json();
+                const summary = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || 'No summary generated.';
+
+                // Display summary
+                newsArea.innerHTML += `
+                    <div class="summary-box">
+                        <div class="summary-label">🤖 AI Summary</div>
+                        <div>${formatSummary(summary)}</div>
+                    </div>
+                `;
+
+                // Save to history
+                saveToHistory(summary);
+
+                // Done
+                loader.classList.remove('show');
+                fetchBtn.disabled = false;
+                const now = new Date().toLocaleTimeString();
+                updateStatus('online', `Last updated: ${now}`);
+                showToast('✅ News fetched & summarized!');
+
+                // If auto mode, restart countdown
+                if (isAutoMode) {
+                    startCountdown(600);
+                }
+
+            } catch (error) {
+                loader.classList.remove('show');
+                fetchBtn.disabled = false;
+                updateStatus('offline', 'Error occurred');
+
+                newsArea.innerHTML = `
+                    <div class="error-box">
+                        ❌ <span><strong>Error:</strong> ${error.message}</span>
+                    </div>
+                `;
+                showToast('❌ ' + error.message);
+            }
+        }
+
+        // ===== AUTO MODE =====
+        function toggleAuto() {
+            const btn = document.getElementById('autoBtn');
+            if (isAutoMode) {
+                // Turn off
+                isAutoMode = false;
+                clearInterval(autoInterval);
+                clearInterval(countdownTimer);
+                document.getElementById('countdown').textContent = '';
+                btn.classList.remove('active');
+                btn.innerHTML = '🔄 Auto Mode';
+                updateStatus('offline', 'Auto mode stopped');
+                showToast('⏹ Auto mode stopped');
+            } else {
+                // Turn on
+                const keys = getKeys();
+                if (!keys.crypto || !keys.gemini) {
+                    showToast('⚠️ Save API keys first!');
+                    return;
+                }
+                isAutoMode = true;
+                btn.classList.add('active');
+                btn.innerHTML = '⏹ Stop Auto';
+                showToast('▶️ Auto mode started — Updates every 10 min');
+
+                fetchNews(); // First run immediately
+                autoInterval = setInterval(fetchNews, 600000); // Every 10 min
+            }
+        }
+
+        // ===== HISTORY =====
+        function saveToHistory(summary) {
+            let history = JSON.parse(localStorage.getItem('botIshan_history') || '[]');
+            history.unshift({
+                time: new Date().toLocaleString(),
+                text: summary
+            });
+            if (history.length > 10) history = history.slice(0, 10);
+            localStorage.setItem('botIshan_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('botIshan_history') || '[]');
+            const card = document.getElementById('historyCard');
+            const area = document.getElementById('historyArea');
+
+            if (history.length === 0) {
+                card.style.display = 'none';
+                return;
+            }
+
+            card.style.display = 'block';
+            area.innerHTML = history.map(h => `
+                <div class="history-item">
+                    <div class="history-time">🕐 ${h.time}</div>
+                    <div class="history-text">${formatSummary(h.text)}</div>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('botIshan_history');
+            document.getElementById('historyCard').style.display = 'none';
+            document.getElementById('historyArea').innerHTML = '';
+            // Also clear news area
+            document.getElementById('newsArea').innerHTML = `
+                <div class="empty-state" id="emptyState">
+                    <div class="icon">🌐</div>
+                    <p>Click <strong>"Fetch & Summarize Now"</strong> to get started</p>
+                </div>
+            `;
+            showToast('🗑 History & display cleared');
+        }
+
+        // ===== HELPERS =====
+        function timeAgo(dateStr) {
+            const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        function formatSummary(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // Load history on page load
+        window.addEventListener('DOMContentLoaded', renderHistory);
+    </script>
+</body>
+</html>
